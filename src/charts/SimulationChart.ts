@@ -1,13 +1,5 @@
 import Chart from "chart.js/auto";
 
-export interface ChartDataPoint {
-  label: string;
-  data: {
-    x: number;
-    [key: string]: number;
-  };
-}
-
 export class SimulationChart {
   private chart: Chart;
   private maxPoints: number;
@@ -19,7 +11,7 @@ export class SimulationChart {
       label: d.label,
       data: [],
       borderColor: d.color,
-      backgroundColor: d.color + "33",
+      backgroundColor: d.color + "18",
     }));
 
     const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
@@ -32,10 +24,10 @@ export class SimulationChart {
           data: d.data,
           borderColor: d.borderColor,
           backgroundColor: d.backgroundColor,
-          borderWidth: 2,
+          borderWidth: 1.5,
           pointRadius: 0,
           fill: true,
-          tension: 0.3,
+          tension: 0.2,
         })),
       },
       options: {
@@ -45,22 +37,23 @@ export class SimulationChart {
         plugins: {
           legend: {
             labels: {
-              color: "#a0a0c0",
-              font: { size: 10 },
-              boxWidth: 12,
+              color: "#64748b",
+              font: { size: 10, family: "-apple-system, sans-serif" },
+              boxWidth: 10,
+              padding: 8,
             },
           },
         },
         scales: {
           x: {
             display: true,
-            ticks: { color: "#666", maxTicksLimit: 5, font: { size: 9 } },
-            grid: { color: "rgba(255,255,255,0.05)" },
+            ticks: { color: "#94a3b8", maxTicksLimit: 4, font: { size: 9 } },
+            grid: { color: "rgba(0,0,0,0.04)" },
           },
           y: {
             display: true,
-            ticks: { color: "#666", font: { size: 9 } },
-            grid: { color: "rgba(255,255,255,0.05)" },
+            ticks: { color: "#94a3b8", font: { size: 9 } },
+            grid: { color: "rgba(0,0,0,0.04)" },
           },
         },
       },

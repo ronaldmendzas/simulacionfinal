@@ -7,6 +7,10 @@ import { SimulationChart } from "./charts/SimulationChart.ts";
 import { lerpColor } from "./utils/colors.ts";
 import "./style.css";
 
+const SVG_FISH = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8c2-3 5-4 8-3l3 3-3 3c-3 1-6 0-8-3z"/><circle cx="11" cy="8" r="1" fill="currentColor"/></svg>';
+const SVG_PERSON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="3" r="2.5"/><path d="M4 15v-4c0-2 1.5-3 4-3s4 1 4 3v4"/></svg>';
+const SVG_OPINION = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h12v8H6l-3 3v-3H2z"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="7.5" x2="9" y2="7.5"/></svg>';
+
 type SimulationType = "fish" | "evacuation" | "opinion";
 
 let currentSim: SimulationType = "fish";
@@ -28,9 +32,9 @@ let fishChart: SimulationChart | null = null;
 let evacChart: SimulationChart | null = null;
 let opinionChart: SimulationChart | null = null;
 
-const evacHistory: { evacuated: number; panic: number }[] = [];
-const opinionHistory: { a: number; b: number; neutral: number }[] = [];
-const fishHistory: { count: number }[] = [];
+function svgIcon(svgStr: string): string {
+  return `<span class="tab-icon">${svgStr}</span>`;
+}
 
 function init(): void {
   const app = document.getElementById("app")!;
@@ -41,15 +45,13 @@ function init(): void {
         <div class="logo-container">
           <div class="logo-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="14" y="14" width="7" height="7" rx="1"/>
+              <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
             </svg>
           </div>
           <div>
-            <h1>Simulacion CA</h1>
-            <p class="subtitle">Autómatas Celulares — IINF-391</p>
+            <h1>Simulaci\u00f3n CA</h1>
+            <p class="subtitle">Aut\u00f3matas Celulares \u2014 IINF-391</p>
           </div>
         </div>
         <div class="header-stats">
@@ -61,32 +63,29 @@ function init(): void {
 
     <nav class="tab-nav">
       <button class="tab-btn active" data-sim="fish">
-        <span class="tab-icon">🐟</span>
-        <span>Cardumen de Peces</span>
+        ${svgIcon(SVG_FISH)}<span>Cardumen</span>
       </button>
       <button class="tab-btn" data-sim="evacuation">
-        <span class="tab-icon">🏃</span>
-        <span>Evacuación</span>
+        ${svgIcon(SVG_PERSON)}<span>Evacuaci\u00f3n</span>
       </button>
       <button class="tab-btn" data-sim="opinion">
-        <span class="tab-icon">💬</span>
-        <span>Opiniones</span>
+        ${svgIcon(SVG_OPINION)}<span>Opiniones</span>
       </button>
     </nav>
 
     <div class="toolbar">
       <div class="toolbar-left">
-        <button class="toolbar-btn" id="btn-play" title="Play/Pause">⏸</button>
-        <button class="toolbar-btn" id="btn-step" title="Step">⏭</button>
-        <button class="toolbar-btn" id="btn-reset" title="Reset">🔄</button>
+        <button class="toolbar-btn" id="btn-play" title="Play/Pause">\u23f8</button>
+        <button class="toolbar-btn" id="btn-step" title="Step">\u23ed</button>
+        <button class="toolbar-btn" id="btn-reset" title="Reset">\u21bb</button>
       </div>
       <div class="toolbar-center">
-        <label class="toolbar-label">Velocidad:</label>
+        <label class="toolbar-label">Velocidad</label>
         <input type="range" id="global-speed" min="1" max="20" value="1" step="1" class="toolbar-slider">
         <span id="speed-val">1x</span>
       </div>
       <div class="toolbar-right">
-        <label class="toolbar-label">Mouse:</label>
+        <label class="toolbar-label">Mouse</label>
         <select id="mouse-mode" class="toolbar-select">
           <option value="observe">Observar</option>
         </select>
@@ -96,13 +95,11 @@ function init(): void {
     <main class="simulation-container">
       <section id="sim-fish" class="sim-panel active">
         <div class="sim-layout">
-          <div class="canvas-area">
-            <canvas id="canvas-fish"></canvas>
-          </div>
+          <div class="canvas-area"><canvas id="canvas-fish"></canvas></div>
           <aside class="sidebar">
             <div id="controls-fish" class="controls-panel"></div>
             <div class="chart-container">
-              <h4 class="chart-title">Peces Activos</h4>
+              <div class="chart-title">Peces Activos</div>
               <canvas id="chart-fish"></canvas>
             </div>
           </aside>
@@ -111,13 +108,11 @@ function init(): void {
 
       <section id="sim-evacuation" class="sim-panel">
         <div class="sim-layout">
-          <div class="canvas-area">
-            <canvas id="canvas-evac"></canvas>
-          </div>
+          <div class="canvas-area"><canvas id="canvas-evac"></canvas></div>
           <aside class="sidebar">
             <div id="controls-evac" class="controls-panel"></div>
             <div class="chart-container">
-              <h4 class="chart-title">Evacuación en Vivo</h4>
+              <div class="chart-title">Evacuaci\u00f3n en Vivo</div>
               <canvas id="chart-evac"></canvas>
             </div>
           </aside>
@@ -126,13 +121,11 @@ function init(): void {
 
       <section id="sim-opinion" class="sim-panel">
         <div class="sim-layout">
-          <div class="canvas-area">
-            <canvas id="canvas-opinion"></canvas>
-          </div>
+          <div class="canvas-area"><canvas id="canvas-opinion"></canvas></div>
           <aside class="sidebar">
             <div id="controls-opinion" class="controls-panel"></div>
             <div class="chart-container">
-              <h4 class="chart-title">Distribución de Opiniones</h4>
+              <div class="chart-title">Distribuci\u00f3n de Opiniones</div>
               <canvas id="chart-opinion"></canvas>
             </div>
           </aside>
@@ -164,7 +157,7 @@ function setupTabs(): void {
 function setupToolbar(): void {
   document.getElementById("btn-play")!.addEventListener("click", () => {
     paused = !paused;
-    document.getElementById("btn-play")!.textContent = paused ? "▶" : "⏸";
+    document.getElementById("btn-play")!.textContent = paused ? "\u25b6" : "\u23f8";
   });
 
   document.getElementById("btn-step")!.addEventListener("click", () => {
@@ -177,12 +170,6 @@ function setupToolbar(): void {
     if (currentSim === "fish") fishSim.reset();
     else if (currentSim === "evacuation") evacSim.reset();
     else opinionSim.reset();
-    evacHistory.length = 0;
-    opinionHistory.length = 0;
-    fishHistory.length = 0;
-    fishChart?.reset();
-    evacChart?.reset();
-    opinionChart?.reset();
   });
 
   const speedSlider = document.getElementById("global-speed") as HTMLInputElement;
@@ -192,20 +179,18 @@ function setupToolbar(): void {
   });
 
   const modeSelect = document.getElementById("mouse-mode") as HTMLSelectElement;
-  modeSelect.addEventListener("change", () => {
-    mouseMode = modeSelect.value;
-  });
+  modeSelect.addEventListener("change", () => { mouseMode = modeSelect.value; });
 }
 
 function updateMouseOptions(): void {
   const select = document.getElementById("mouse-mode") as HTMLSelectElement;
   select.innerHTML = "";
   if (currentSim === "fish") {
-    select.innerHTML = '<option value="observe">Observar</option><option value="add-fish">Agregar Pez</option><option value="add-predator">Agregar Depredador</option><option value="add-obstacle">Agregar Obstáculo</option>';
+    select.innerHTML = '<option value="observe">Observar</option><option value="add-fish">Agregar Pez</option><option value="add-predator">Depredador</option><option value="add-obstacle">Obst\u00e1culo</option>';
   } else if (currentSim === "evacuation") {
-    select.innerHTML = '<option value="observe">Observar</option><option value="add-person">Agregar Persona</option><option value="add-wall">Agregar Pared</option><option value="add-fire">Agregar Fuego</option>';
+    select.innerHTML = '<option value="observe">Observar</option><option value="add-person">Persona</option><option value="add-wall">Pared</option><option value="add-fire">Fuego</option>';
   } else {
-    select.innerHTML = '<option value="observe">Observar</option><option value="add-a">Agregar Opinión A</option><option value="add-b">Agregar Opinión B</option><option value="add-influencer">Agregar Influencer</option>';
+    select.innerHTML = '<option value="observe">Observar</option><option value="add-a">Opini\u00f3n A</option><option value="add-b">Opini\u00f3n B</option><option value="add-influencer">Influencer</option>';
   }
   mouseMode = "observe";
 }
@@ -213,333 +198,236 @@ function updateMouseOptions(): void {
 function setupCanvasClick(): void {
   const canvasId = currentSim === "fish" ? "canvas-fish" : currentSim === "evacuation" ? "canvas-evac" : "canvas-opinion";
   const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-  canvas.onclick = null;
-  canvas.addEventListener("click", (e) => {
+  const handler = (e: MouseEvent) => {
     if (mouseMode === "observe") return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const canvasX = (e.clientX - rect.left) * scaleX;
-    const canvasY = (e.clientY - rect.top) * scaleY;
-    const cellSize = renderer.getCellSize();
-    const gridX = Math.floor(canvasX / cellSize);
-    const gridY = Math.floor(canvasY / cellSize);
-
+    const gridX = Math.floor((e.clientX - rect.left) * scaleX / renderer.getCellSize());
+    const gridY = Math.floor((e.clientY - rect.top) * scaleY / renderer.getCellSize());
     if (currentSim === "fish") handleFishClick(gridX, gridY);
     else if (currentSim === "evacuation") handleEvacClick(gridX, gridY);
     else handleOpinionClick(gridX, gridY);
-  });
+  };
+  canvas.removeEventListener("click", (() => {}) as EventListener);
+  canvas.addEventListener("click", handler);
 }
 
 function handleFishClick(x: number, y: number): void {
-  const grid = fishSim.getGrid();
   if (x < 0 || x >= fishSim.getWidth() || y < 0 || y >= fishSim.getHeight()) return;
-  if (mouseMode === "add-fish" && grid[y][x].type === "empty") {
+  const grid = fishSim.getGrid();
+  if (mouseMode === "add-fish" && grid[y][x].type === "empty")
     fishSim.setCell(x, y, { type: "fish", direction: Math.floor(Math.random() * 8), speed: 2 });
-  } else if (mouseMode === "add-predator" && grid[y][x].type === "empty") {
+  else if (mouseMode === "add-predator" && grid[y][x].type === "empty")
     fishSim.setCell(x, y, { type: "predator", direction: Math.floor(Math.random() * 8), speed: 3 });
-  } else if (mouseMode === "add-obstacle" && grid[y][x].type === "empty") {
+  else if (mouseMode === "add-obstacle" && grid[y][x].type === "empty")
     fishSim.setCell(x, y, { type: "obstacle", direction: 0, speed: 1 });
-  }
 }
 
 function handleEvacClick(x: number, y: number): void {
   if (x < 0 || x >= evacSim.getWidth() || y < 0 || y >= evacSim.getHeight()) return;
   const grid = evacSim.getGrid();
-  if (mouseMode === "add-person" && grid[y][x].type === EvacCellType.EMPTY) {
+  if (mouseMode === "add-person" && grid[y][x].type === EvacCellType.EMPTY)
     evacSim.setCell(x, y, { type: EvacCellType.PERSON, personState: PersonState.NORMAL, panicLevel: 0.1, speed: 1, vision: 4, potential: 0 });
-  } else if (mouseMode === "add-wall" && grid[y][x].type === EvacCellType.EMPTY) {
+  else if (mouseMode === "add-wall" && grid[y][x].type === EvacCellType.EMPTY)
     evacSim.setCell(x, y, { type: EvacCellType.WALL, personState: null, panicLevel: 0, speed: 0, vision: 0, potential: 0 });
-  } else if (mouseMode === "add-fire" && grid[y][x].type === EvacCellType.EMPTY) {
+  else if (mouseMode === "add-fire" && grid[y][x].type === EvacCellType.EMPTY)
     evacSim.setCell(x, y, { type: EvacCellType.FIRE, personState: null, panicLevel: 0, speed: 0, vision: 0, potential: 0 });
-  }
 }
 
 function handleOpinionClick(x: number, y: number): void {
   if (x < 0 || x >= opinionSim.getWidth() || y < 0 || y >= opinionSim.getHeight()) return;
   const grid = opinionSim.getGrid();
-  if (mouseMode === "add-a" && grid[y][x].state === OpinionState.NEUTRAL) {
+  if (mouseMode === "add-a" && grid[y][x].state === OpinionState.NEUTRAL)
     opinionSim.setCell(x, y, { state: OpinionState.A_FAVORABLE, conviction: 0.5, resistance: 0.2, opinionType: "A", sameOpinionTicks: 0, influencerForce: 0 });
-  } else if (mouseMode === "add-b" && grid[y][x].state === OpinionState.NEUTRAL) {
+  else if (mouseMode === "add-b" && grid[y][x].state === OpinionState.NEUTRAL)
     opinionSim.setCell(x, y, { state: OpinionState.B_FAVORABLE, conviction: 0.5, resistance: 0.2, opinionType: "B", sameOpinionTicks: 0, influencerForce: 0 });
-  } else if (mouseMode === "add-influencer" && grid[y][x].state === OpinionState.NEUTRAL) {
-    const type = Math.random() < 0.5 ? "A" as const : "B" as const;
-    opinionSim.setCell(x, y, { state: OpinionState.INFLUENCER, conviction: 1, resistance: 1, opinionType: type, sameOpinionTicks: 0, influencerForce: 0.9 });
+  else if (mouseMode === "add-influencer" && grid[y][x].state === OpinionState.NEUTRAL) {
+    const t = Math.random() < 0.5 ? "A" as const : "B" as const;
+    opinionSim.setCell(x, y, { state: OpinionState.INFLUENCER, conviction: 1, resistance: 1, opinionType: t, sameOpinionTicks: 0, influencerForce: 0.9 });
   }
 }
 
 function switchSimulation(sim: SimulationType): void {
-  if (animationId !== null) {
-    cancelAnimationFrame(animationId);
-    animationId = null;
-  }
+  if (animationId !== null) { cancelAnimationFrame(animationId); animationId = null; }
   paused = false;
-  document.getElementById("btn-play")!.textContent = "⏸";
+  document.getElementById("btn-play")!.textContent = "\u23f8";
   currentSim = sim;
-
   document.querySelectorAll(".sim-panel").forEach((p) => p.classList.remove("active"));
   document.getElementById(`sim-${sim}`)?.classList.add("active");
 
   switch (sim) {
     case "fish":
       renderer = new CanvasRenderer("canvas-fish", fishSim.getWidth(), fishSim.getHeight());
-      initFishControls();
-      break;
+      initFishControls(); break;
     case "evacuation":
       renderer = new CanvasRenderer("canvas-evac", evacSim.getWidth(), evacSim.getHeight());
-      initEvacControls();
-      break;
+      initEvacControls(); break;
     case "opinion":
       renderer = new CanvasRenderer("canvas-opinion", opinionSim.getWidth(), opinionSim.getHeight());
-      initOpinionControls();
-      break;
+      initOpinionControls(); break;
   }
-
   updateMouseOptions();
   setupCanvasClick();
   runLoop();
 }
 
 function initFishSim(): void {
-  const config: FishSchoolConfig = {
-    width: 120, height: 80, boundaryType: "toroidal",
-    fishCount: 200, hasPredator: false, obstacleDensity: 0.01,
-    perceptionRadius: 3, speedMultiplier: 1,
-  };
-  fishSim = new FishSchool(config);
+  fishSim = new FishSchool({ width: 120, height: 80, boundaryType: "toroidal", fishCount: 200, hasPredator: false, obstacleDensity: 0.01, perceptionRadius: 3, speedMultiplier: 1 });
 }
-
 function initEvacSim(): void {
-  const config: CrowdEvacuationConfig = {
-    width: 80, height: 60, boundaryType: "fixed",
-    personCount: 120, exitCount: 2, hasFire: false, initialPanicThreshold: 0.7,
-  };
-  evacSim = new CrowdEvacuation(config);
+  evacSim = new CrowdEvacuation({ width: 80, height: 60, boundaryType: "fixed", personCount: 120, exitCount: 2, hasFire: false, initialPanicThreshold: 0.7 });
 }
-
 function initOpinionSim(): void {
-  const config: OpinionSpreadConfig = {
-    width: 100, height: 100, boundaryType: "toroidal",
-    densityA: 0.2, densityB: 0.15, influencerCount: 3,
-    convictionThreshold: 0.5, longLinksK: 2, misinformation: false,
-  };
-  opinionSim = new OpinionSpread(config);
+  opinionSim = new OpinionSpread({ width: 100, height: 100, boundaryType: "toroidal", densityA: 0.2, densityB: 0.15, influencerCount: 3, convictionThreshold: 0.5, longLinksK: 2, misinformation: false });
 }
 
 function initFishControls(): void {
   controls = new SimulationControls("controls-fish");
-  controls.createSectionTitle("Parámetros");
+  controls.createSectionTitle("Par\u00e1metros");
   controls.createSlider({ id: "fish-count", label: "Peces", min: 50, max: 800, value: 200, step: 10, onChange: (v) => fishSim.setFishCount(v) });
-  controls.createSlider({ id: "fish-perception", label: "Radio percepción", min: 1, max: 5, value: 3, step: 1, onChange: (v) => fishSim.setPerceptionRadius(v) });
-  controls.createSlider({ id: "fish-obstacles", label: "Obstáculos %", min: 0, max: 10, value: 1, step: 1, onChange: (v) => fishSim.setObstacleDensity(v / 100) });
+  controls.createSlider({ id: "fish-perception", label: "Radio percepci\u00f3n", min: 1, max: 5, value: 3, step: 1, onChange: (v) => fishSim.setPerceptionRadius(v) });
+  controls.createSlider({ id: "fish-obstacles", label: "Obst\u00e1culos %", min: 0, max: 10, value: 1, step: 1, onChange: (v) => fishSim.setObstacleDensity(v / 100) });
   controls.createSeparator();
   controls.createSectionTitle("Modos");
   controls.createToggle({ id: "fish-predator", label: "Depredador", checked: false, onChange: (v) => fishSim.setPredator(v) });
-  controls.createToggle({ id: "fish-glow", label: "Efecto Glow", checked: true, onChange: (v) => renderer.setGlow(v) });
-  controls.createToggle({ id: "fish-trails", label: "Estelas", checked: false, onChange: (v) => renderer.setTrails(v) });
   controls.createSeparator();
-  controls.createStats({ "Generación": 0, "Peces": 200 });
-
-  if (!fishChart) {
-    fishChart = new SimulationChart("chart-fish", [{ label: "Activos", color: "#00b4d8" }], 300);
-  }
+  controls.createButton("Reiniciar", () => fishSim.setFishCount(controls.getValue("fish-count")));
+  controls.createSeparator();
+  controls.createStats({ "Generaci\u00f3n": 0, "Peces": 200 });
+  if (!fishChart) fishChart = new SimulationChart("chart-fish", [{ label: "Activos", color: "#2563eb" }], 300);
 }
 
 function initEvacControls(): void {
   controls = new SimulationControls("controls-evac");
-  controls.createSectionTitle("Parámetros");
+  controls.createSectionTitle("Par\u00e1metros");
   controls.createSlider({ id: "evac-persons", label: "Personas", min: 20, max: 300, value: 120, step: 10, onChange: (v) => evacSim.setPersonCount(v) });
   controls.createSlider({ id: "evac-exits", label: "Salidas", min: 1, max: 4, value: 2, step: 1, onChange: (v) => evacSim.setExitCount(v) });
   controls.createSeparator();
   controls.createSectionTitle("Modos");
   controls.createToggle({ id: "evac-fire", label: "Fuego/Humo", checked: false, onChange: (v) => evacSim.setHasFire(v) });
-  controls.createToggle({ id: "evac-glow", label: "Efecto Glow", checked: true, onChange: (v) => renderer.setGlow(v) });
   controls.createSeparator();
-  controls.createStats({ "Generación": 0, "Evacuados": 0, "Pánico": 0, "Caídos": 0, "% Evacuado": "0%" });
-
-  if (!evacChart) {
-    evacChart = new SimulationChart("chart-evac", [
-      { label: "Evacuados", color: "#00b894" },
-      { label: "Pánico", color: "#fdcb6e" },
-      { label: "Caídos", color: "#e17055" },
-    ], 300);
-  }
+  controls.createButton("Reiniciar", () => evacSim.setPersonCount(controls.getValue("evac-persons")));
+  controls.createSeparator();
+  controls.createStats({ "Generaci\u00f3n": 0, "Evacuados": 0, "P\u00e1nico": 0, "Ca\u00eddos": 0, "% Evacuado": "0%" });
+  if (!evacChart) evacChart = new SimulationChart("chart-evac", [{ label: "Evacuados", color: "#16a34a" }, { label: "P\u00e1nico", color: "#d97706" }, { label: "Ca\u00eddos", color: "#dc2626" }], 300);
 }
 
 function initOpinionControls(): void {
   controls = new SimulationControls("controls-opinion");
-  controls.createSectionTitle("Parámetros");
+  controls.createSectionTitle("Par\u00e1metros");
   controls.createSlider({ id: "op-density-a", label: "Densidad A %", min: 5, max: 50, value: 20, step: 1, onChange: (v) => opinionSim.setDensityA(v / 100) });
   controls.createSlider({ id: "op-density-b", label: "Densidad B %", min: 5, max: 50, value: 15, step: 1, onChange: (v) => opinionSim.setDensityB(v / 100) });
   controls.createSlider({ id: "op-influencers", label: "Influencers", min: 0, max: 10, value: 3, step: 1, onChange: (v) => opinionSim.setInfluencerCount(v) });
-  controls.createSlider({ id: "op-threshold", label: "Umbral convicción %", min: 10, max: 90, value: 50, step: 5, onChange: (v) => opinionSim.setConvictionThreshold(v / 100) });
+  controls.createSlider({ id: "op-threshold", label: "Umbral convicci\u00f3n %", min: 10, max: 90, value: 50, step: 5, onChange: (v) => opinionSim.setConvictionThreshold(v / 100) });
   controls.createSeparator();
   controls.createSectionTitle("Modos");
-  controls.createToggle({ id: "op-misinfo", label: "Desinformación", checked: false, onChange: (v) => opinionSim.setMisinformation(v) });
-  controls.createToggle({ id: "op-glow", label: "Efecto Glow", checked: true, onChange: (v) => renderer.setGlow(v) });
+  controls.createToggle({ id: "op-misinfo", label: "Desinformaci\u00f3n", checked: false, onChange: (v) => opinionSim.setMisinformation(v) });
   controls.createSeparator();
-  controls.createStats({ "Generación": 0, "Opinión A": 0, "Opinión B": 0, "Neutral": 0 });
-
-  if (!opinionChart) {
-    opinionChart = new SimulationChart("chart-opinion", [
-      { label: "Opinión A", color: "#6c5ce7" },
-      { label: "Opinión B", color: "#e17055" },
-      { label: "Neutral", color: "#636e72" },
-    ], 300);
-  }
+  controls.createButton("Reiniciar", () => opinionSim.reset());
+  controls.createSeparator();
+  controls.createStats({ "Generaci\u00f3n": 0, "Opini\u00f3n A": 0, "Opini\u00f3n B": 0, "Neutral": 0 });
+  if (!opinionChart) opinionChart = new SimulationChart("chart-opinion", [{ label: "A", color: "#2563eb" }, { label: "B", color: "#dc2626" }, { label: "Neutral", color: "#94a3b8" }], 300);
 }
 
 function renderFish(): void {
   renderer.clear();
   const grid = fishSim.getGrid();
-
   for (let y = 0; y < fishSim.getHeight(); y++) {
     for (let x = 0; x < fishSim.getWidth(); x++) {
       const cell = grid[y][x];
-      switch (cell.type) {
-        case "fish": {
-          const localFish = fishSim.getMooreNeighbors(x, y, 2).filter(c => c.type === "fish").length;
-          const t = Math.min(localFish / 6, 1);
-          const color = lerpColor("rgb(0,180,216)", "rgb(0,255,200)", t);
-          renderer.drawTriangle(x, y, cell.direction, 0.8, color, "rgba(0,180,216,0.6)");
-          break;
-        }
-        case "predator":
-          renderer.drawCircle(x, y, 0.7, "#ff2255", "rgba(255,34,85,0.4)");
-          break;
-        case "obstacle":
-          renderer.drawRect(x, y, "#3d5a80", 0.7);
-          break;
+      if (cell.type === "fish") {
+        const localFish = fishSim.getMooreNeighbors(x, y, 2).filter(c => c.type === "fish").length;
+        const t = Math.min(localFish / 6, 1);
+        const color = lerpColor("rgb(37,99,235)", "rgb(6,182,212)", t);
+        renderer.drawTriangle(x, y, cell.direction, 0.8, color);
+      } else if (cell.type === "predator") {
+        renderer.drawCircle(x, y, 0.6, "#dc2626", "rgba(220,38,38,0.4)");
+      } else if (cell.type === "obstacle") {
+        renderer.drawRect(x, y, "#64748b", 0.6);
       }
     }
   }
-
-  controls.updateStat("Generación", fishSim.getGeneration());
+  controls.updateStat("Generaci\u00f3n", fishSim.getGeneration());
   const fishCount = grid.flat().filter(c => c.type === "fish").length;
   controls.updateStat("Peces", fishCount);
-
-  if (fishSim.getGeneration() % 5 === 0) {
-    fishChart?.addDataPoint(String(fishSim.getGeneration()), [fishCount]);
-  }
+  if (fishSim.getGeneration() % 5 === 0) fishChart?.addDataPoint(String(fishSim.getGeneration()), [fishCount]);
 }
 
 function renderEvacuation(): void {
   renderer.clear();
   const grid = evacSim.getGrid();
   const potentialMap = evacSim.getPotentialMap();
-
   for (let y = 0; y < evacSim.getHeight(); y++) {
     for (let x = 0; x < evacSim.getWidth(); x++) {
       const cell = grid[y][x];
-      switch (cell.type) {
-        case EvacCellType.WALL:
-          renderer.drawRect(x, y, "#2d3436");
-          break;
-        case EvacCellType.EXIT:
-          renderer.drawGlowRect(x, y, "#00b894", "rgba(0,184,148,0.6)");
-          break;
-        case EvacCellType.FIRE:
-          renderer.drawGlowRect(x, y, "#e17055", "rgba(225,112,85,0.5)");
-          break;
-        case EvacCellType.PERSON:
-          if (cell.personState === PersonState.PANIC) {
-            renderer.drawRect(x, y, "#fdcb6e");
-          } else if (cell.personState === PersonState.FALLEN) {
-            renderer.drawRect(x, y, "#636e72");
-          } else {
-            renderer.drawRect(x, y, "#74b9ff");
-          }
-          break;
-        case EvacCellType.EMPTY: {
-          const maxPot = 60;
-          const pot = Math.min((potentialMap[y]?.[x] ?? 999) / maxPot, 1);
-          const r = Math.round(15 + pot * 10);
-          const g = Math.round(15 + (1 - pot) * 10);
-          const b = Math.round(30 + (1 - pot) * 8);
-          renderer.drawRect(x, y, `rgb(${r},${g},${b})`);
-          break;
-        }
+      if (cell.type === EvacCellType.WALL) {
+        renderer.drawRect(x, y, "#334155");
+      } else if (cell.type === EvacCellType.EXIT) {
+        renderer.drawBorderedRect(x, y, "#16a34a", "#15803d");
+      } else if (cell.type === EvacCellType.FIRE) {
+        renderer.drawBorderedRect(x, y, "#dc2626", "#b91c1c");
+      } else if (cell.type === EvacCellType.PERSON) {
+        if (cell.personState === PersonState.PANIC) renderer.drawRect(x, y, "#f59e0b");
+        else if (cell.personState === PersonState.FALLEN) renderer.drawRect(x, y, "#78716c");
+        else renderer.drawRect(x, y, "#3b82f6");
+      } else {
+        const maxPot = 60;
+        const pot = Math.min((potentialMap[y]?.[x] ?? 999) / maxPot, 1);
+        const gray = Math.round(26 + (1 - pot) * 12);
+        renderer.drawRect(x, y, `rgb(${gray},${gray},${Math.round(gray * 1.15)})`);
       }
     }
   }
-
   const total = evacSim.getTotalPersons();
   const evacuated = evacSim.getEvacuatedCount();
   const pct = total > 0 ? ((evacuated / total) * 100).toFixed(1) : "0";
-  controls.updateStat("Generación", evacSim.getGeneration());
+  controls.updateStat("Generaci\u00f3n", evacSim.getGeneration());
   controls.updateStat("Evacuados", evacuated);
-  controls.updateStat("Pánico", evacSim.getPanicCount());
-  controls.updateStat("Caídos", evacSim.getFallenCount());
+  controls.updateStat("P\u00e1nico", evacSim.getPanicCount());
+  controls.updateStat("Ca\u00eddos", evacSim.getFallenCount());
   controls.updateStat("% Evacuado", `${pct}%`);
-
-  if (evacSim.getGeneration() % 5 === 0) {
-    evacChart?.addDataPoint(String(evacSim.getGeneration()), [evacuated, evacSim.getPanicCount(), evacSim.getFallenCount()]);
-  }
+  if (evacSim.getGeneration() % 5 === 0) evacChart?.addDataPoint(String(evacSim.getGeneration()), [evacuated, evacSim.getPanicCount(), evacSim.getFallenCount()]);
 }
 
 function renderOpinion(): void {
   renderer.clear();
   const grid = opinionSim.getGrid();
-
   for (let y = 0; y < opinionSim.getHeight(); y++) {
     for (let x = 0; x < opinionSim.getWidth(); x++) {
       const cell = grid[y][x];
       let color: string;
-      let glowColor: string | undefined;
-      switch (cell.state) {
-        case OpinionState.A_FAVORABLE: {
-          const c = cell.conviction;
-          color = `rgb(${Math.round(108 + c * 147)},${Math.round(92 - c * 40)},${Math.round(231 - c * 100)})`;
-          glowColor = "rgba(108,92,231,0.3)";
-          break;
-        }
-        case OpinionState.B_FAVORABLE: {
-          const c = cell.conviction;
-          color = `rgb(${Math.round(225 + c * 30)},${Math.round(112 - c * 60)},${Math.round(85 - c * 40)})`;
-          glowColor = "rgba(225,112,85,0.3)";
-          break;
-        }
-        case OpinionState.INFLUENCER:
-          color = cell.opinionType === "A" ? "#a29bfe" : "#ffeaa7";
-          glowColor = cell.opinionType === "A" ? "rgba(162,155,254,0.5)" : "rgba(255,234,167,0.5)";
-          break;
-        case OpinionState.INDIFERENTE:
-          color = "#b2bec3";
-          break;
-        case OpinionState.NEUTRAL:
-        default:
-          color = "#0d0d1a";
-          break;
-      }
-      if (glowColor && cell.state !== OpinionState.NEUTRAL && cell.state !== OpinionState.INDIFERENTE && cell.conviction > 0.5) {
-        renderer.drawGlowRect(x, y, color, glowColor);
+      if (cell.state === OpinionState.A_FAVORABLE) {
+        const c = cell.conviction;
+        color = `rgb(${Math.round(37 + c * 30)},${Math.round(99 + c * 40)},${Math.round(235 - c * 30)})`;
+      } else if (cell.state === OpinionState.B_FAVORABLE) {
+        const c = cell.conviction;
+        color = `rgb(${Math.round(220 + c * 25)},${Math.round(38 + c * 20)},${Math.round(38 + c * 10)})`;
+      } else if (cell.state === OpinionState.INFLUENCER) {
+        color = cell.opinionType === "A" ? "#7c3aed" : "#ea580c";
+      } else if (cell.state === OpinionState.INDIFERENTE) {
+        color = "#94a3b8";
       } else {
-        renderer.drawRect(x, y, color);
+        color = "#1e293b";
       }
+      renderer.drawRect(x, y, color);
     }
   }
-
-  controls.updateStat("Generación", opinionSim.getGeneration());
-  controls.updateStat("Opinión A", opinionSim.getCountA());
-  controls.updateStat("Opinión B", opinionSim.getCountB());
+  controls.updateStat("Generaci\u00f3n", opinionSim.getGeneration());
+  controls.updateStat("Opini\u00f3n A", opinionSim.getCountA());
+  controls.updateStat("Opini\u00f3n B", opinionSim.getCountB());
   controls.updateStat("Neutral", opinionSim.getCountNeutral());
-
-  if (opinionSim.getGeneration() % 5 === 0) {
-    opinionChart?.addDataPoint(String(opinionSim.getGeneration()), [opinionSim.getCountA(), opinionSim.getCountB(), opinionSim.getCountNeutral()]);
-  }
+  if (opinionSim.getGeneration() % 5 === 0) opinionChart?.addDataPoint(String(opinionSim.getGeneration()), [opinionSim.getCountA(), opinionSim.getCountB(), opinionSim.getCountNeutral()]);
 }
 
 function runLoop(): void {
   const loop = (timestamp: number) => {
     frameCount++;
     if (timestamp - lastFpsTime >= 1000) {
-      fps = frameCount;
-      frameCount = 0;
-      lastFpsTime = timestamp;
+      fps = frameCount; frameCount = 0; lastFpsTime = timestamp;
       const fpsBadge = document.getElementById("fps-badge");
       if (fpsBadge) fpsBadge.textContent = `${fps} FPS`;
     }
-
     if (!paused) {
       const stepInterval = Math.max(16, 100 / speedMultiplier);
       if (timestamp - lastStepTime >= stepInterval) {
