@@ -269,18 +269,22 @@ function initOpinionControls(): void {
 }
 
 function renderFish(): void {
-  renderer.clear();
+  renderer.advanceTick();
+  renderer.drawGradientBg("#0c1929", "#0a1628");
   const grid = fishSim.getGrid();
   for (let y = 0; y < fishSim.getHeight(); y++) {
     for (let x = 0; x < fishSim.getWidth(); x++) {
       const cell = grid[y][x];
       if (cell.type === "fish") {
         const lf = fishSim.getMooreNeighbors(x, y, 2).filter(c => c.type === "fish").length;
-        renderer.drawTriangle(x, y, cell.direction, 0.8, lerpColor("rgb(37,99,235)", "rgb(6,150,200)", Math.min(lf / 6, 1)));
+        const color = lerpColor("rgb(37,99,235)", "rgb(6,200,220)", Math.min(lf / 6, 1));
+        renderer.drawGlowCircle(x, y, 0.2, color, "rgba(6,182,212,0.15)", 0.15);
+        renderer.drawTriangle(x, y, cell.direction, 0.8, color);
       } else if (cell.type === "predator") {
+        renderer.drawGlowCircle(x, y, 0.25, "#b91c1c", "rgba(185,28,28,0.25)", 0.08);
         renderer.drawCircle(x, y, 0.6, "#b91c1c", "rgba(185,28,28,0.3)");
       } else if (cell.type === "obstacle") {
-        renderer.drawRect(x, y, "#64748b", 0.5);
+        renderer.drawRect(x, y, "#3b4252", 0.7);
       }
     }
   }
@@ -291,23 +295,35 @@ function renderFish(): void {
 }
 
 function renderEvacuation(): void {
-  renderer.clear();
+  renderer.advanceTick();
+  renderer.drawGradientBg("#111318", "#0f1219");
   const grid = evacSim.getGrid();
   const pm = evacSim.getPotentialMap();
   for (let y = 0; y < evacSim.getHeight(); y++) {
     for (let x = 0; x < evacSim.getWidth(); x++) {
       const c = grid[y][x];
-      if (c.type === EvacCellType.WALL) renderer.drawRect(x, y, "#334155");
-      else if (c.type === EvacCellType.EXIT) renderer.drawBorderedRect(x, y, "#15803d", "#166534");
-      else if (c.type === EvacCellType.FIRE) renderer.drawBorderedRect(x, y, "#b91c1c", "#991b1b");
-      else if (c.type === EvacCellType.PERSON) {
-        if (c.personState === PersonState.PANIC) renderer.drawRect(x, y, "#b45309");
-        else if (c.personState === PersonState.FALLEN) renderer.drawRect(x, y, "#57534e");
-        else renderer.drawRect(x, y, "#2563eb");
+      if (c.type === EvacCellType.WALL) {
+        renderer.drawRect(x, y, "#2d3340");
+      } else if (c.type === EvacCellType.EXIT) {
+        renderer.drawPulsatingRect(x, y, "#22c55e", "#4ade80", 0.1);
+      } else if (c.type === EvacCellType.FIRE) {
+        renderer.drawFireRect(x, y);
+      } else if (c.type === EvacCellType.PERSON) {
+        const p = c.panicLevel ?? 0;
+        if (c.personState === PersonState.PANIC) {
+          renderer.drawGradientRect(x, y, "#f59e0b", [180, 83, 9]);
+        } else if (c.personState === PersonState.FALLEN) {
+          renderer.drawRect(x, y, "#78716c");
+          renderer.drawXMark(x, y, "#fbbf24");
+        } else {
+          const blue = Math.round(99 + (1 - p) * 157);
+          const green = Math.round(115 + (1 - p) * 80);
+          renderer.drawRect(x, y, `rgb(37,${green},${blue})`);
+        }
       } else {
         const p = Math.min((pm[y]?.[x] ?? 999) / 60, 1);
-        const g = Math.round(27 + (1 - p) * 10);
-        renderer.drawRect(x, y, `rgb(${g},${g},${Math.round(g * 1.1)})`);
+        const v = Math.round(18 + (1 - p) * 6);
+        renderer.drawRect(x, y, `rgb(${v},${v},${Math.round(v * 1.15)})`);
       }
     }
   }
@@ -321,18 +337,37 @@ function renderEvacuation(): void {
 }
 
 function renderOpinion(): void {
-  renderer.clear();
+  renderer.advanceTick();
+  renderer.drawGradientBg("#111827", "#0f172a");
   const grid = opinionSim.getGrid();
   for (let y = 0; y < opinionSim.getHeight(); y++) {
     for (let x = 0; x < opinionSim.getWidth(); x++) {
       const c = grid[y][x];
       let color: string;
-      if (c.state === OpinionState.A_FAVORABLE) { const v = c.conviction; color = `rgb(${29 + Math.round(v * 20)},${78 + Math.round(v * 30)},${235 - Math.round(v * 40)})`; }
-      else if (c.state === OpinionState.B_FAVORABLE) { const v = c.conviction; color = `rgb(${185 + Math.round(v * 30)},${28 + Math.round(v * 15)},${28 + Math.round(v * 10)})`; }
-      else if (c.state === OpinionState.INFLUENCER) color = c.opinionType === "A" ? "#7c3aed" : "#ea580c";
-      else if (c.state === OpinionState.INDIFERENTE) color = "#94a3b8";
-      else color = "#1e293b";
-      renderer.drawRect(x, y, color);
+      if (c.state === OpinionState.A_FAVORABLE) {
+        const v = c.conviction;
+        const r = Math.round(29 + v * 40);
+        const g = Math.round(78 + v * 60);
+        const b = Math.round(235 - v * 80);
+        color = `rgb(${r},${g},${b})`;
+        renderer.drawRect(x, y, color);
+      } else if (c.state === OpinionState.B_FAVORABLE) {
+        const v = c.conviction;
+        const r = Math.round(185 + v * 40);
+        const g = Math.round(28 + v * 30);
+        const b = Math.round(28 + v * 15);
+        color = `rgb(${r},${g},${b})`;
+        renderer.drawRect(x, y, color);
+      } else if (c.state === OpinionState.INFLUENCER) {
+        const baseColor = c.opinionType === "A" ? "#7c3aed" : "#ea580c";
+        const glowColor = c.opinionType === "A" ? "rgba(124,58,237,0.3)" : "rgba(234,88,12,0.3)";
+        renderer.drawGlowCircle(x, y, 0.25, baseColor, glowColor, 0.12);
+        renderer.drawRect(x, y, baseColor);
+      } else if (c.state === OpinionState.INDIFERENTE) {
+        renderer.drawRect(x, y, "#94a3b8");
+      } else {
+        renderer.drawRect(x, y, "#1e293b");
+      }
     }
   }
   controls.updateStat("Generaci\u00f3n", opinionSim.getGeneration());
