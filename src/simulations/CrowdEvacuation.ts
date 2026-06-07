@@ -225,10 +225,10 @@ export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
       // Collaboración: persona normal ayuda a caído cercano
       if (cell.personState === PersonState.NORMAL) {
         for (const [fnx, fny] of neighborCoords) {
-          if (this.grid[fny][fnx].personState === PersonState.FALLEN && !moved[fny][fnx]) {
-            // Ayudar al caído: se levanta y recupera estado normal
+if (this.grid[fny][fnx].personState === PersonState.FALLEN && !moved[fny][fnx]) {
             newGrid[fny][fnx] = { ...this.grid[fny][fnx], personState: PersonState.NORMAL, panicLevel: this.grid[fny][fnx].panicLevel * 0.5 };
             this.fallenCount = Math.max(0, this.fallenCount - 1);
+            moved[fny][fnx] = true;
             break;
           }
         }
@@ -290,9 +290,12 @@ export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
 
     if (this.hasFire && this.generation % 8 === 0 && this.generation > 0) {
       this.spreadFire(newGrid);
+      this.grid = newGrid;
+      this.computePotentialMap();
+    } else {
+      this.grid = newGrid;
     }
 
-    this.grid = newGrid;
     this.panicCount = 0;
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {

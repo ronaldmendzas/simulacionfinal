@@ -146,7 +146,48 @@ export class FishSchool extends CellularAutomaton<FishCell> {
           destY = ny;
         }
 
-        if (
+        // FAST fish: try to move 2 cells in the same direction
+        if (cell.speed === FishSpeed.FAST) {
+          const nx2 = destX + DIRECTION_DX[finalDir];
+          const ny2 = destY + DIRECTION_DY[finalDir];
+          let destX2: number, destY2: number;
+          if (this.boundaryType === "toroidal") {
+            destX2 = ((nx2 % this.width) + this.width) % this.width;
+            destY2 = ((ny2 % this.height) + this.height) % this.height;
+          } else {
+            destX2 = nx2;
+            destY2 = ny2;
+          }
+
+          if (
+            destX2 >= 0 && destX2 < this.width &&
+            destY2 >= 0 && destY2 < this.height &&
+            newGrid[destY2][destX2].type === "empty" &&
+            !moved[destY2][destX2] &&
+            destX >= 0 && destX < this.width &&
+            destY >= 0 && destY < this.height &&
+            newGrid[destY][destX].type === "empty" &&
+            !moved[destY][destX]
+          ) {
+            newGrid[destY2][destX2] = { ...cell, direction: finalDir };
+            newGrid[y][x] = this.getDefaultState();
+            moved[destY2][destX2] = true;
+            moved[y][x] = true;
+          } else if (
+            destX >= 0 && destX < this.width &&
+            destY >= 0 && destY < this.height &&
+            newGrid[destY][destX].type === "empty" &&
+            !moved[destY][destX]
+          ) {
+            newGrid[destY][destX] = { ...cell, direction: finalDir };
+            newGrid[y][x] = this.getDefaultState();
+            moved[destY][destX] = true;
+            moved[y][x] = true;
+          } else {
+            newGrid[y][x] = { ...cell, direction: finalDir };
+            moved[y][x] = true;
+          }
+        } else if (
           destX >= 0 && destX < this.width &&
           destY >= 0 && destY < this.height &&
           newGrid[destY][destX].type === "empty" &&
