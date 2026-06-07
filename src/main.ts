@@ -78,7 +78,7 @@ function init(): void {
           <div class="canvas-area"><canvas id="canvas-fish"></canvas></div>
           <aside class="sidebar">
             <div id="controls-fish" class="controls-panel"></div>
-            <div class="chart-container"><div class="chart-title">Peces Activos</div><canvas id="chart-fish"></canvas></div>
+            <div class="chart-container"><div class="chart-inside"><div class="chart-title">Peces Activos</div><canvas id="chart-fish"></canvas></div></div>
           </aside>
         </div>
       </section>
@@ -88,7 +88,7 @@ function init(): void {
           <div class="canvas-area"><canvas id="canvas-evac"></canvas></div>
           <aside class="sidebar">
             <div id="controls-evac" class="controls-panel"></div>
-            <div class="chart-container"><div class="chart-title">Evacuaci&oacute;n</div><canvas id="chart-evac"></canvas></div>
+            <div class="chart-container"><div class="chart-inside"><div class="chart-title">Evacuaci&oacute;n</div><canvas id="chart-evac"></canvas></div></div>
           </aside>
         </div>
       </section>
@@ -98,7 +98,7 @@ function init(): void {
           <div class="canvas-area"><canvas id="canvas-opinion"></canvas></div>
           <aside class="sidebar">
             <div id="controls-opinion" class="controls-panel"></div>
-            <div class="chart-container"><div class="chart-title">Opiniones</div><canvas id="chart-opinion"></canvas></div>
+            <div class="chart-container"><div class="chart-inside"><div class="chart-title">Opiniones</div><canvas id="chart-opinion"></canvas></div></div>
           </aside>
         </div>
       </section>
