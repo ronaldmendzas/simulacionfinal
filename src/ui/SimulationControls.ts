@@ -27,14 +27,20 @@ export class SimulationControls {
     const wrapper = document.createElement("div");
     wrapper.className = "control-group";
 
-    const label = document.createElement("label");
-    label.htmlFor = config.id;
+    const labelRow = document.createElement("div");
+    labelRow.className = "control-label-row";
+
+    const label = document.createElement("span");
+    label.className = "control-label";
     label.textContent = config.label;
 
     const valueDisplay = document.createElement("span");
     valueDisplay.id = `${config.id}-value`;
-    valueDisplay.textContent = String(config.value);
     valueDisplay.className = "control-value";
+    valueDisplay.textContent = String(config.value);
+
+    labelRow.appendChild(label);
+    labelRow.appendChild(valueDisplay);
 
     const input = document.createElement("input");
     input.type = "range";
@@ -43,6 +49,7 @@ export class SimulationControls {
     input.max = String(config.max);
     input.value = String(config.value);
     input.step = String(config.step ?? 1);
+    input.className = "slider-input";
 
     input.addEventListener("input", () => {
       const val = Number(input.value);
@@ -50,8 +57,7 @@ export class SimulationControls {
       config.onChange?.(val);
     });
 
-    label.appendChild(valueDisplay);
-    wrapper.appendChild(label);
+    wrapper.appendChild(labelRow);
     wrapper.appendChild(input);
     this.container.appendChild(wrapper);
     this.controls.set(config.id, input);
@@ -62,26 +68,33 @@ export class SimulationControls {
     wrapper.className = "control-group toggle-group";
 
     const label = document.createElement("label");
-    label.className = "toggle-label";
+    label.className = "toggle-switch";
 
     const input = document.createElement("input");
     input.type = "checkbox";
     input.id = config.id;
     input.checked = config.checked;
 
-    const checkmark = document.createElement("span");
-    checkmark.className = "checkmark";
+    const track = document.createElement("span");
+    track.className = "toggle-track";
+    const thumb = document.createElement("span");
+    thumb.className = "toggle-thumb";
+    track.appendChild(thumb);
 
     input.addEventListener("change", () => {
       config.onChange?.(input.checked);
+      track.classList.toggle("active", input.checked);
     });
 
-    label.appendChild(input);
-    label.appendChild(checkmark);
-    const text = document.createElement("span");
-    text.textContent = config.label;
-    label.appendChild(text);
+    if (config.checked) track.classList.add("active");
 
+    const text = document.createElement("span");
+    text.className = "toggle-text";
+    text.textContent = config.label;
+
+    label.appendChild(input);
+    label.appendChild(track);
+    label.appendChild(text);
     wrapper.appendChild(label);
     this.container.appendChild(wrapper);
     this.controls.set(config.id, input);
@@ -90,30 +103,43 @@ export class SimulationControls {
   createButton(label: string, onClick: () => void, className: string = ""): void {
     const btn = document.createElement("button");
     btn.textContent = label;
-    btn.className = `control-button ${className}`;
+    btn.className = `btn ${className}`.trim();
     btn.addEventListener("click", onClick);
     this.container.appendChild(btn);
   }
 
+  createSeparator(): void {
+    const sep = document.createElement("div");
+    sep.className = "control-separator";
+    this.container.appendChild(sep);
+  }
+
+  createSectionTitle(title: string): void {
+    const h = document.createElement("h3");
+    h.className = "control-section-title";
+    h.textContent = title;
+    this.container.appendChild(h);
+  }
+
   createStats(initialStats: Record<string, string | number>): HTMLElement {
     const stats = document.createElement("div");
-    stats.className = "stats-panel";
+    stats.className = "stats-grid";
 
     for (const [key, value] of Object.entries(initialStats)) {
       const stat = document.createElement("div");
-      stat.className = "stat-item";
+      stat.className = "stat-card";
 
-      const label = document.createElement("span");
-      label.className = "stat-label";
-      label.textContent = key;
-
-      const val = document.createElement("span");
-      val.className = "stat-value";
+      const val = document.createElement("div");
+      val.className = "stat-number";
       val.id = `stat-${key.replace(/\s+/g, "-").toLowerCase()}`;
       val.textContent = String(value);
 
-      stat.appendChild(label);
+      const label = document.createElement("div");
+      label.className = "stat-label";
+      label.textContent = key;
+
       stat.appendChild(val);
+      stat.appendChild(label);
       stats.appendChild(stat);
     }
 
@@ -123,7 +149,11 @@ export class SimulationControls {
 
   updateStat(key: string, value: string | number): void {
     const el = document.getElementById(`stat-${key.replace(/\s+/g, "-").toLowerCase()}`);
-    if (el) el.textContent = String(value);
+    if (el) {
+      el.textContent = String(value);
+      el.classList.add("stat-updated");
+      setTimeout(() => el.classList.remove("stat-updated"), 300);
+    }
   }
 
   getValue(id: string): number {
