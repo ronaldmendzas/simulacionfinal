@@ -105,7 +105,7 @@ export class SimulationControls {
     wrapper.className = `light-beam-btn full-width ${className}`.trim();
     const btn = document.createElement("button");
     btn.className = "btn-inside";
-    btn.textContent = label;
+    btn.innerHTML = `<svg class="btn-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 8A5.5 5.5 0 1 1 8 13.5"/><polyline points="2.5,4 2.5,8.5 7,8.5"/></svg> ${label}`;
     btn.addEventListener("click", onClick);
     wrapper.appendChild(btn);
     this.container.appendChild(wrapper);

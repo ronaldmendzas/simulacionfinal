@@ -129,15 +129,22 @@ body {
   margin: 1px;
   background: var(--surface-alt);
   color: var(--text);
-  border-radius: calc(var(--r) - 1px);
-  padding: 4px 12px;
+  border-radius: 20px;
+  padding: 5px 16px;
   cursor: pointer;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 500;
   border: none;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.btn-svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .light-beam-btn .btn-inside:hover { background: #222238; }
