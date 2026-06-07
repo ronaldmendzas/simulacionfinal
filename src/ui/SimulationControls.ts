@@ -101,11 +101,14 @@ export class SimulationControls {
   }
 
   createButton(label: string, onClick: () => void, className: string = ""): void {
+    const wrapper = document.createElement("div");
+    wrapper.className = `light-beam-btn full-width ${className}`.trim();
     const btn = document.createElement("button");
+    btn.className = "btn-inside";
     btn.textContent = label;
-    btn.className = `btn ${className}`.trim();
     btn.addEventListener("click", onClick);
-    this.container.appendChild(btn);
+    wrapper.appendChild(btn);
+    this.container.appendChild(wrapper);
   }
 
   createSeparator(): void {

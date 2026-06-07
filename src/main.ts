@@ -55,9 +55,9 @@ function init(): void {
 
     <div class="toolbar">
       <div class="toolbar-left">
-        <button class="toolbar-btn" id="btn-play" title="Play/Pause">&#9208;</button>
-        <button class="toolbar-btn" id="btn-step" title="Step">&#9197;</button>
-        <button class="toolbar-btn" id="btn-reset" title="Reset">&#8635;</button>
+        <div class="light-beam-btn"><button class="btn-inside" id="btn-play" title="Play/Pause">&#9208;</button></div>
+        <div class="light-beam-btn"><button class="btn-inside" id="btn-step" title="Step">&#9197;</button></div>
+        <div class="light-beam-btn"><button class="btn-inside" id="btn-reset" title="Reset">&#8635;</button></div>
       </div>
       <div class="toolbar-center">
         <span class="toolbar-label">Velocidad</span>
@@ -77,8 +77,8 @@ function init(): void {
         <div class="sim-layout">
           <div class="canvas-area"><canvas id="canvas-fish"></canvas></div>
           <aside class="sidebar">
-            <div id="controls-fish" class="controls-panel"></div>
-            <div class="chart-container"><div class="chart-inside"><div class="chart-title">Peces Activos</div><canvas id="chart-fish"></canvas></div></div>
+            <div class="light-beam-panel"><div id="controls-fish" class="controls-panel inside"></div></div>
+            <div class="light-beam-panel green-beam"><div class="chart-container inside"><div class="chart-title">Peces Activos</div><canvas id="chart-fish"></canvas></div></div>
           </aside>
         </div>
       </section>
@@ -87,8 +87,8 @@ function init(): void {
         <div class="sim-layout">
           <div class="canvas-area"><canvas id="canvas-evac"></canvas></div>
           <aside class="sidebar">
-            <div id="controls-evac" class="controls-panel"></div>
-            <div class="chart-container"><div class="chart-inside"><div class="chart-title">Evacuaci&oacute;n</div><canvas id="chart-evac"></canvas></div></div>
+            <div class="light-beam-panel"><div id="controls-evac" class="controls-panel inside"></div></div>
+            <div class="light-beam-panel green-beam"><div class="chart-container inside"><div class="chart-title">Evacuaci&oacute;n</div><canvas id="chart-evac"></canvas></div></div>
           </aside>
         </div>
       </section>
@@ -97,8 +97,8 @@ function init(): void {
         <div class="sim-layout">
           <div class="canvas-area"><canvas id="canvas-opinion"></canvas></div>
           <aside class="sidebar">
-            <div id="controls-opinion" class="controls-panel"></div>
-            <div class="chart-container"><div class="chart-inside"><div class="chart-title">Opiniones</div><canvas id="chart-opinion"></canvas></div></div>
+            <div class="light-beam-panel"><div id="controls-opinion" class="controls-panel inside"></div></div>
+            <div class="light-beam-panel green-beam"><div class="chart-container inside"><div class="chart-title">Opiniones</div><canvas id="chart-opinion"></canvas></div></div>
           </aside>
         </div>
       </section>
