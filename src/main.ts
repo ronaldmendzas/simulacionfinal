@@ -217,7 +217,7 @@ function switchSimulation(sim: SimulationType): void {
 }
 
 function initFishSim(): void { fishSim = new FishSchool({ width: 120, height: 80, boundaryType: "toroidal", fishCount: 200, hasPredator: false, obstacleDensity: 0.01, perceptionRadius: 3, speedMultiplier: 1 }); }
-function initEvacSim(): void { evacSim = new CrowdEvacuation({ width: 80, height: 60, boundaryType: "fixed", personCount: 120, exitCount: 2, hasFire: false, initialPanicThreshold: 0.7 }); }
+function initEvacSim(): void { evacSim = new CrowdEvacuation({ width: 80, height: 60, boundaryType: "fixed", personCount: 120, exitCount: 2, hasFire: false, initialPanicThreshold: 0.7, scenario: "room" }); }
 function initOpinionSim(): void { opinionSim = new OpinionSpread({ width: 100, height: 100, boundaryType: "toroidal", densityA: 0.2, densityB: 0.15, influencerCount: 3, convictionThreshold: 0.5, longLinksK: 2, misinformation: false }); }
 
 function initFishControls(): void {
@@ -228,6 +228,7 @@ function initFishControls(): void {
   controls.createSlider({ id: "fish-obstacles", label: "Obst\u00e1culos %", min: 0, max: 10, value: 1, step: 1, onChange: (v) => fishSim.setObstacleDensity(v / 100) });
   controls.createSeparator();
   controls.createToggle({ id: "fish-predator", label: "Depredador", checked: false, onChange: (v) => fishSim.setPredator(v) });
+  controls.createToggle({ id: "fish-boundary", label: "Frontera toroidal", checked: true, onChange: (v) => fishSim.setBoundaryType(v ? "toroidal" : "fixed") });
   controls.createSeparator();
   controls.createButton("Reiniciar", () => fishSim.setFishCount(controls.getValue("fish-count")));
   controls.createSeparator();
@@ -241,6 +242,8 @@ function initEvacControls(): void {
   controls.createSlider({ id: "evac-persons", label: "Personas", min: 20, max: 300, value: 120, step: 10, onChange: (v) => evacSim.setPersonCount(v) });
   controls.createSlider({ id: "evac-exits", label: "Salidas", min: 1, max: 4, value: 2, step: 1, onChange: (v) => evacSim.setExitCount(v) });
   controls.createSeparator();
+  controls.createSectionTitle("Escenario");
+  controls.createToggle({ id: "evac-bottleneck", label: "Pasillo estrecho", checked: false, onChange: (v) => evacSim.setScenario(v ? "bottleneck" : "room") });
   controls.createToggle({ id: "evac-fire", label: "Fuego", checked: false, onChange: (v) => evacSim.setHasFire(v) });
   controls.createSeparator();
   controls.createButton("Reiniciar", () => evacSim.setPersonCount(controls.getValue("evac-persons")));

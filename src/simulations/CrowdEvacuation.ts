@@ -31,6 +31,7 @@ export interface CrowdEvacuationConfig extends CellularAutomatonConfig {
   exitCount: number;
   hasFire: boolean;
   initialPanicThreshold: number;
+  scenario: "room" | "bottleneck";
 }
 
 export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
@@ -43,6 +44,7 @@ export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
   private panicCount: number;
   private fallenCount: number;
   private totalPersons: number;
+  private scenario: "room" | "bottleneck";
 
   constructor(config: CrowdEvacuationConfig) {
     super(config);
@@ -50,6 +52,7 @@ export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
     this.exitCount = config.exitCount;
     this.hasFire = config.hasFire;
     this.panicThreshold = config.initialPanicThreshold;
+    this.scenario = config.scenario ?? "room";
     this.potentialMap = [];
     this.evacuatedCount = 0;
     this.panicCount = 0;
@@ -81,6 +84,11 @@ export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
   }
 
   protected initialize(): void {
+    if (this.scenario === "bottleneck") {
+      this.initializeBottleneck();
+      return;
+    }
+
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         if (x === 0 || x === this.width - 1 || y === 0 || y === this.height - 1) {
@@ -214,10 +222,25 @@ export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
         continue;
       }
 
+      // Collaboración: persona normal ayuda a caído cercano
+      if (cell.personState === PersonState.NORMAL) {
+        for (const [fnx, fny] of neighborCoords) {
+          if (this.grid[fny][fnx].personState === PersonState.FALLEN && !moved[fny][fnx]) {
+            // Ayudar al caído: se levanta y recupera estado normal
+            newGrid[fny][fnx] = { ...this.grid[fny][fnx], personState: PersonState.NORMAL, panicLevel: this.grid[fny][fnx].panicLevel * 0.5 };
+            this.fallenCount = Math.max(0, this.fallenCount - 1);
+            break;
+          }
+        }
+      }
+
+      // Visión limitada: persona solo ve celdas dentro de su radio de visión
       let bestX = x, bestY = y;
       let bestPotential = this.potentialMap[y]?.[x] ?? Infinity;
       if (bestPotential === Infinity) bestPotential = 999;
 
+      // Visión limitada: filtrar direcciones fuera del radio de visión
+      const vision = cell.vision;
       const directions = cell.personState === PersonState.PANIC
         ? this.shuffleArray([[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]])
         : [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
@@ -227,6 +250,10 @@ export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
         const nnx = x + ddx;
         const nny = y + ddy;
         if (nnx < 0 || nnx >= this.width || nny < 0 || nny >= this.height) continue;
+
+        // Visión limitada: no puede ver más allá de su radio
+        if (Math.abs(ddx) > 0 && Math.abs(ddy) > 0 && (Math.abs(ddx) > vision || Math.abs(ddy) > vision)) continue;
+        if (Math.abs(ddx) > vision || Math.abs(ddy) > vision) continue;
 
         const targetCell = this.grid[nny][nnx];
 
@@ -308,4 +335,53 @@ export class CrowdEvacuation extends CellularAutomaton<EvacCell> {
   setPersonCount(count: number): void { this.personCount = count; this.reset(); }
   setExitCount(count: number): void { this.exitCount = count; this.reset(); }
   setHasFire(has: boolean): void { this.hasFire = has; this.reset(); }
+  setScenario(scenario: "room" | "bottleneck"): void { this.scenario = scenario; this.reset(); }
+
+  private initializeBottleneck(): void {
+    // Borders as walls
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        if (x === 0 || x === this.width - 1 || y === 0 || y === this.height - 1) {
+          this.grid[y][x] = { ...this.getDefaultState(), type: EvacCellType.WALL };
+        }
+      }
+    }
+
+    // Central horizontal wall with a narrow passage (bottleneck)
+    const wallY = Math.floor(this.height / 2);
+    const passageWidth = 3;
+    const passageStart = Math.floor(this.width / 2) - Math.floor(passageWidth / 2);
+    for (let x = 1; x < this.width - 1; x++) {
+      if (x < passageStart || x >= passageStart + passageWidth) {
+        this.grid[wallY][x] = { ...this.getDefaultState(), type: EvacCellType.WALL };
+      }
+    }
+
+    // Exit at bottom center
+    const exitX = Math.floor(this.width / 2);
+    this.grid[this.height - 1][exitX] = { ...this.getDefaultState(), type: EvacCellType.EXIT };
+
+    // Place people in top half only
+    let placed = 0;
+    while (placed < this.personCount) {
+      const px = 1 + Math.floor(Math.random() * (this.width - 2));
+      const py = 1 + Math.floor(Math.random() * (wallY - 1));
+      if (py < wallY && this.grid[py][px].type === EvacCellType.EMPTY) {
+        this.grid[py][px] = { ...this.getDefaultState(), type: EvacCellType.PERSON, personState: PersonState.NORMAL, panicLevel: Math.random() * 0.1, speed: 1 + Math.floor(Math.random() * 2), vision: 3 + Math.floor(Math.random() * 3) };
+        placed++;
+      }
+    }
+
+    if (this.hasFire) {
+      const fx = Math.floor(this.width / 4);
+      const fy = 2;
+      for (let dy = 0; dy <= 1; dy++) {
+        for (let dx = 0; dx <= 1; dx++) {
+          if (this.grid[fy + dy][fx + dx].type === EvacCellType.EMPTY) {
+            this.grid[fy + dy][fx + dx] = { ...this.getDefaultState(), type: EvacCellType.FIRE };
+          }
+        }
+      }
+    }
+  }
 }

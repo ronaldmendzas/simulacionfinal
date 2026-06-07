@@ -95,6 +95,9 @@ export class FishSchool extends CellularAutomaton<FishCell> {
         if (cell.type !== "fish" && cell.type !== "predator") continue;
         if (moved[y][x]) continue;
 
+        // Velocidad discreta: lento = se mueve cada 2 ticks, rapido = cada tick
+        if (cell.type === "fish" && cell.speed === FishSpeed.SLOW && this.generation % 2 !== 0) continue;
+
         if (cell.type === "predator") {
           this.movePredator(x, y, newGrid, moved);
           continue;
@@ -291,4 +294,5 @@ export class FishSchool extends CellularAutomaton<FishCell> {
   setPredator(active: boolean): void { this.hasPredator = active; this.reset(); }
   setObstacleDensity(density: number): void { this.obstacleDensity = density; this.reset(); }
   setPerceptionRadius(radius: number): void { this.perceptionRadius = radius; }
+  setBoundaryType(type: "toroidal" | "fixed"): void { this.boundaryType = type; this.reset(); }
 }
