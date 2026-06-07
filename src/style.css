@@ -274,8 +274,8 @@ body {
   font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px;
   color: var(--green); font-weight: 600; margin-bottom: 4px;
 }
-.chart-inside { padding: 10px; }
-.chart-inside canvas { max-height: 140px; }
+.chart-inside { padding: 10px; height: 200px; overflow: hidden; }
+.chart-inside canvas { max-height: 160px !important; }
 
 .toolbar-label { color: var(--text-dim); font-size: 0.7rem; }
 #speed-val { font-family: monospace; font-size: 0.78rem; color: var(--accent); font-weight: 600; }

@@ -15,6 +15,12 @@ export class SimulationChart {
     }));
 
     const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    const parent = canvas.parentElement;
+    if (parent) {
+      parent.style.height = "160px";
+      parent.style.position = "relative";
+    }
+
     this.chart = new Chart(canvas, {
       type: "line",
       data: {
@@ -37,7 +43,7 @@ export class SimulationChart {
         plugins: {
           legend: {
             labels: {
-              color: "#64748b",
+              color: "#8888aa",
               font: { size: 10, family: "-apple-system, sans-serif" },
               boxWidth: 10,
               padding: 8,
@@ -47,13 +53,13 @@ export class SimulationChart {
         scales: {
           x: {
             display: true,
-            ticks: { color: "#94a3b8", maxTicksLimit: 4, font: { size: 9 } },
-            grid: { color: "rgba(0,0,0,0.04)" },
+            ticks: { color: "#666680", maxTicksLimit: 4, font: { size: 9 } },
+            grid: { color: "rgba(255,255,255,0.04)" },
           },
           y: {
             display: true,
-            ticks: { color: "#94a3b8", font: { size: 9 } },
-            grid: { color: "rgba(0,0,0,0.04)" },
+            ticks: { color: "#666680", font: { size: 9 } },
+            grid: { color: "rgba(255,255,255,0.04)" },
           },
         },
       },
