@@ -55,9 +55,9 @@ function init(): void {
 
     <div class="toolbar">
       <div class="toolbar-left">
-        <div class="light-beam-btn"><button class="btn-inside" id="btn-play" title="Play/Pause"><svg class="btn-svg" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="3" width="4" height="10" rx="1"/><rect x="9" y="3" width="4" height="10" rx="1"/></svg> Pausar</button></div>
-        <div class="light-beam-btn"><button class="btn-inside" id="btn-step" title="Step"><svg class="btn-svg" viewBox="0 0 16 16" fill="currentColor"><polygon points="3,2 12,8 3,14"/><rect x="12" y="2" width="2" height="12" rx="0.5"/></svg> Avanzar</button></div>
-        <div class="light-beam-btn"><button class="btn-inside" id="btn-reset" title="Reset"><svg class="btn-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 8A5.5 5.5 0 1 1 8 13.5"/><polyline points="2.5,4 2.5,8.5 7,8.5"/></svg> Reiniciar</button></div>
+        <div class="light-beam-btn"><button class="btn-inside" id="btn-play" title="Play/Pause"><svg class="btn-svg" viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="3" width="4" height="10" rx="1"/><rect x="9" y="3" width="4" height="10" rx="1"/></svg> Pause</button></div>
+        <div class="light-beam-btn"><button class="btn-inside" id="btn-step" title="Step"><svg class="btn-svg" viewBox="0 0 16 16" fill="currentColor"><polygon points="3,2 12,8 3,14"/><rect x="12" y="2" width="2" height="12" rx="0.5"/></svg> Step</button></div>
+        <div class="light-beam-btn"><button class="btn-inside" id="btn-reset" title="Reset"><svg class="btn-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 8A5.5 5.5 0 1 1 8 13.5"/><polyline points="2.5,4 2.5,8.5 7,8.5"/></svg> Reset</button></div>
       </div>
       <div class="toolbar-center">
         <span class="toolbar-label">Velocidad</span>
@@ -130,7 +130,7 @@ function setupToolbar(): void {
   const playBtn = document.getElementById("btn-play")!;
   playBtn.addEventListener("click", () => {
     paused = !paused;
-    playBtn.innerHTML = paused ? `${playActiveSvg} Reanudar` : `${playSvg} Pausar`;
+    playBtn.innerHTML = paused ? `${playActiveSvg} Play` : `${playSvg} Pause`;
   });
   document.getElementById("btn-step")!.addEventListener("click", () => {
     if (currentSim === "fish") { fishSim.step(); renderFish(); }
